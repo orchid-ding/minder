@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>骨架管理</title>
+
+    <link href="favicon.ico" type="image/x-icon" rel="shortcut icon">
+
+    <!-- bower:css -->
+    <link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" href="./bower_components/codemirror/lib/codemirror.css"/>
+    <link rel="stylesheet" href="./bower_components/hotbox/hotbox.css"/>
+    <link rel="stylesheet" href="./bower_components/kityminder.core.css"/>
+    <link rel="stylesheet" href="./bower_components/color-picker/dist/color-picker.min.css"/>
+    <link rel="stylesheet" href="./bower_components/jqueryToast/css/toast.style.min.css"/>
+    <!-- endbower -->
+
+    <link rel="stylesheet" href="kityminder.editor.min.css">
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        .flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .editor-title {
+            display: inline-block;
+            background: #393F4F;
+            color: white;
+            margin: 0;
+            height: 40px;
+            font-size: 14px;
+            line-height: 40px;
+            font-family: 'Hiragino Sans GB', 'Arial', 'Microsoft Yahei';
+            font-weight: normal;
+            padding: 0 20px;
+        }
+
+        .save {
+            float: right;
+            height: 36px;
+            font-size: 14px;
+            line-height: 36px;
+            background: #409EFF;
+            border-radius: 5px;
+            margin: 2px;
+            padding: 0 20px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        div.minder-editor-container {
+            position: absolute;
+            top: 40px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+    </style>
+</head>
+
+<body ng-app="kityminderDemo" ng-controller="MainController">
+<div class="flex">
+    <h1 class="editor-title">骨架管理</h1>
+    <h1 class="editor-title">编辑时使用Ctrl + s 保存</h1>
+    <div class="save" onclick="saveData()">点击保存</div>
+</div>
+<kityminder-editor on-init="initEditor(editor, minder)"></kityminder-editor>
+</body>
+
+<!-- bower:js -->
+<script src="./bower_components/jquery/dist/jquery.js"></script>
+<script src="./bower_components/bootstrap/dist/js/bootstrap.js"></script>
+<script src="./bower_components/angular/angular.js"></script>
+<script src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="./bower_components/codemirror/lib/codemirror.js"></script>
+<script src="./bower_components/codemirror/mode/xml/xml.js"></script>
+<script src="./bower_components/codemirror/mode/javascript/javascript.js"></script>
+<script src="./bower_components/codemirror/mode/css/css.js"></script>
+<script src="./bower_components/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<script src="./bower_components/codemirror/mode/markdown/markdown.js"></script>
+<script src="./bower_components/codemirror/addon/mode/overlay.js"></script>
+<script src="./bower_components/codemirror/mode/gfm/gfm.js"></script>
+<script src="./bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
+<script src="./bower_components/marked/lib/marked.js"></script>
+<script src="./bower_components/kity/dist/kity.min.js"></script>
+<script src="./bower_components/hotbox/hotbox.js"></script>
+<script src="./bower_components/json-diff/json-diff.js"></script>
+<script src="./bower_components/kityminder.core.min.js"></script>
+<script src="./bower_components/color-picker/dist/color-picker.min.js"></script>
+<script src="./bower_components/jqueryToast/js/toast.script.js"></script>
+<!-- endbower -->
+
+<script src="kityminder.editor.min.js"></script>
+
+
+<script>
+    angular.module('kityminderDemo', ['kityminderEditor'])
+        .config(function (configProvider) {
+            configProvider.set('imageUpload', './server/imageUpload.php');
+        })
+        .controller('MainController', function ($scope) {
+            $scope.initEditor = function (editor, minder) {
+                window.editor = editor;
+                window.minder = minder;
+            };
+        });
+</script>
+<script>
+    document.addEventListener('keydown', function (e) {
+        if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault()
+            saveData()
+        }
+    });
+    window.onload = function () {
+        $.get('/api/minder/get', {}, function (res) {
+            if (res.status == 1) {
+                editor.minder.importData('json', res.data)
+            }
+        }, 'json')
+    }
+
+    function saveData() {
+        $.post('/api/minder/set', editor.minder.exportJson(), function (res) {
+            if (res.status != 1) {
+                $.Toast('提示', '保存错误', 'error');
+            } else {
+                $.Toast('提示', '保存成功', 'success');
+            }
+        })
+    }
+</script>
+
+</html>
