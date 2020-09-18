@@ -70,9 +70,8 @@
 <body ng-app="kityminderDemo" ng-controller="MainController">
 <div class="flex">
     <h1 class="editor-title">骨架管理</h1>
-    <h1 class="editor-title">编辑时使用Ctrl + s 保存</h1>
-    <input type="file" id="import" onchange="upload_file(this)">
-    <div class="save" onclick="saveData()">下载</div>
+    <div class="save" onclick="loadData()">加载</div>
+    <div class="save" onclick="saveData()">保存</div>
 </div>
 <kityminder-editor on-init="initEditor(editor, minder)"></kityminder-editor>
 </body>
@@ -128,6 +127,8 @@
                 editor.minder.importData('json', res.data)
             }
         }, 'json')
+        const kfly = localStorage.getItem("kfly")
+        editor.minder.importData('json', kfly)
     }
     function upload_file(input){
         if (window.FileReader) {
@@ -159,6 +160,10 @@
         }
 
     }
+    function loadData(){
+        const kfly = localStorage.getItem("kfly")
+        editor.minder.importData('json', kfly)
+    }
     function saveData() {
         /// 保存代码
         // $.post('/api/minder/set', editor.minder.exportJson(), function (res) {
@@ -168,18 +173,23 @@
         //         $.Toast('提示', '保存成功', 'success');
         //     }
         // })
-        const pom = document.createElement('a');
-        console.log(editor.minder.exportJson())
 
-        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent( JSON.stringify(editor.minder.exportJson())));
-        pom.setAttribute('download', "1");
-        if (document.createEvent) {
-            const event = document.createEvent('MouseEvents');
-            event.initEvent('click', true, true);
-            pom.dispatchEvent(event);
-        } else {
-            pom.click();
-        }
+        // 保存到location
+        const  json = editor.minder.exportJson()
+        localStorage.setItem("kfly",JSON.stringify(json));
+        // 下载到本地
+        // const pom = document.createElement('a');
+        // console.log(editor.minder.exportJson())
+        //
+        // pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent( JSON.stringify(editor.minder.exportJson())));
+        // pom.setAttribute('download', "1");
+        // if (document.createEvent) {
+        //     const event = document.createEvent('MouseEvents');
+        //     event.initEvent('click', true, true);
+        //     pom.dispatchEvent(event);
+        // } else {
+        //     pom.click();
+        // }
     }
 </script>
 
