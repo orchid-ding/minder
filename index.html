@@ -71,7 +71,8 @@
 <div class="flex">
     <h1 class="editor-title">骨架管理</h1>
     <h1 class="editor-title">编辑时使用Ctrl + s 保存</h1>
-    <div class="save" onclick="saveData()">点击保存</div>
+    <input type="file" id="import" onchange="upload_file(this)">
+    <div class="save" onclick="saveData()">下载</div>
 </div>
 <kityminder-editor on-init="initEditor(editor, minder)"></kityminder-editor>
 </body>
@@ -128,15 +129,57 @@
             }
         }, 'json')
     }
-
-    function saveData() {
-        $.post('/api/minder/set', editor.minder.exportJson(), function (res) {
-            if (res.status != 1) {
-                $.Toast('提示', '保存错误', 'error');
-            } else {
-                $.Toast('提示', '保存成功', 'success');
+    function upload_file(input){
+        if (window.FileReader) {
+            const file = input.files[0];
+            const filename = file.name.split(".")[0];
+            const reader = new FileReader();
+            reader.onload = function() {
+                console.log(this.result)
             }
-        })
+            const  json = reader.readAsText(file)
+            editor.minder.importData('json', decodeURIComponent(json))
+        }
+        //支持IE 7 8 9 10
+        else if (typeof window.ActiveXObject != 'undefined'){
+            let xmlDoc;
+            xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+            xmlDoc.async = false;
+            xmlDoc.load(input.value);
+            alert(xmlDoc.xml);
+        }
+        //支持FF
+        else if (document.implementation && document.implementation.createDocument) {
+            let xmlDoc;
+            xmlDoc = document.implementation.createDocument("", "", null);
+            xmlDoc.async = false;
+            xmlDoc.load(input.value);
+        } else {
+            alert('error');
+        }
+
+    }
+    function saveData() {
+        /// 保存代码
+        // $.post('/api/minder/set', editor.minder.exportJson(), function (res) {
+        //     if (res.status != 1) {
+        //         $.Toast('提示', '保存错误', 'error');
+        //     } else {
+        //         $.Toast('提示', '保存成功', 'success');
+        //     }
+        // })
+        const pom = document.createElement('a');
+        console.log(editor.minder.exportJson())
+
+        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent( JSON.stringify(editor.minder.exportJson())));
+        pom.setAttribute('download', "1");
+        if (document.createEvent) {
+            const event = document.createEvent('MouseEvents');
+            event.initEvent('click', true, true);
+            pom.dispatchEvent(event);
+        } else {
+            pom.click();
+        }
     }
 </script>
 
